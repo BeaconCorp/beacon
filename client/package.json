@@ -1,0 +1,22 @@
+{
+  "name": "beacon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL3",
+  "dependencies": {
+    "history": "^2.0.1",
+    "leaflet": "^0.7.7",
+    "node-sass": "^3.4.2",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "react-leaflet": "^0.11.0",
+    "react-router": "^2.0.1",
+    "sass-loader": "^3.2.0",
+    "webpack": "^1.12.14"
+  }
+}
