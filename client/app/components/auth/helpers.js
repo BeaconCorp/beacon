@@ -5,12 +5,14 @@ module.exports = {
   login(email, pass, cb) {
     console.log(pass);
     let hash = sha256(pass);
-    axios.get('http://beacon.mycodespace.net/api/users/login', {
+    axios.post('http://beacon.mycodespace.net/api/users/login', {
       email: email,
       password: hash,
     })
     .then((response) => {
       console.log(response);
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', response.data);
       cb(true);
     })
     .catch((response) => {

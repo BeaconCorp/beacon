@@ -1,8 +1,8 @@
 module.exports = {
   entry: './app/app.js',
   output: {
-    filename: './public/bundle.js',
-    //filename: '../server/beacon/static/bundle.js',
+    //filename: './public/bundle.js',
+    filename: '../server/beacon/static/bundle.js',
     //filename: '../app/www/bundle.js',
   },
   module: {

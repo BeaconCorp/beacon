@@ -17,39 +17,26 @@ var MapPage = React.createClass({
     navigator.geolocation.getCurrentPosition((data) => {
       getAllBeacons(data.coords.latitude, data.coords.longitude)
       .then((response) => {
-        console.log('MapPage.componentDidMount(), got location successfully.');
-        this.setState({ beacons: response });
-        renderBeacons();
+        console.log('MapPage.componentDidMount(), got location successfully.',
+          response);
+        this.setState({ beacons: response.data });
+        this.renderBeacons();
       });
     });
-
-    /*navigator.geolocation.getCurrentPosition(function(data) {
-      
-      var thing = getAllBeacons(data.coords.latitude, data.coords.longitude);
-      
-      console.log('MapPage.componentDidMount(), thing:');
-      console.log(thing);
-      
-      thing.then((response) => {
-        console.log('MapPage.componentDidMount(), got location successfully.');
-        this.setState({ beacons: response });
-        renderBeacons();
-      });
-
-      return null;
-    
-    });*/
-
   },
 
   renderBeacons: function () {
-    console.log('MapPage.renderBeacons()');
+    console.log('MapPage.renderBeacons()', this.state.beacons);
     let beacons = this.state.beacons.map((beacon, index) => {
       let position = [beacon.lat, beacon.lng];
       return (
         <Marker position={position} key={index}>
           <Popup>
-            <span>{beacon.description}</span>
+            <div>
+              <h3>{beacon.title}</h3>
+              <p>{beacon.description}</p>
+              <p>{beacon.topics}</p>
+            </div>
           </Popup>
         </Marker>
       );

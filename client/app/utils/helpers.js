@@ -1,10 +1,9 @@
 import axios from 'axios';
+import auth from '../components/auth/helpers';
 
 export function createBeacon(options) {
-  
-  console.log('helers, createBeacon(), options: ', options);
-
-  return axios.post('http://beacon.mycodespace.net/api/beacons', {
+  let token = auth.getToken();
+  return axios.post(`http://beacon.mycodespace.net/api/beacons?token=${token}`, {
     title: options.title,
     description: options.description,
     radius: options.radius,
@@ -17,15 +16,14 @@ export function createBeacon(options) {
 };
 
 export function getAllBeacons(lat, lng) {
-
-  console.log('helpers, getAllBeacons()');
-
-  return axios.get('http://beacon.mycodespace.net/api/beacons', {
-    lat: lat,
-    lng: lng,
-    radius: 4,
+  let token = auth.getToken();
+  return axios.get(`http://beacon.mycodespace.net/api/beacons`, {
+    params: {
+      lat: lat,
+      lng: lng,
+      radius: 4000,
+      token: token,
+    },
   });
 
 };
-
-

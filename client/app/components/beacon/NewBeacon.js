@@ -3,7 +3,7 @@ import { Input, ButtonInput, Row, Col } from 'react-bootstrap';
 import { Notification } from 'react-notification';
 import { Form } from 'formsy-react';
 
-import createBeacon from '../../utils/helpers';
+import { createBeacon } from '../../utils/helpers';
 
 const NewBeacon = React.createClass({
   componentDidMount: function () {
@@ -24,21 +24,24 @@ const NewBeacon = React.createClass({
     console.log('NewBeacon.submitBeacon()');
     var options = {
       title: this.state.title,
-      description: 'WHAT!?', //this.state.description,
+      description: this.state.description,
       topics: this.state.topics,
       lat: this.state.lat,
       lng: this.state.lng,
     };
+
+    console.log(createBeacon);
+
     createBeacon(
       options
     )
     .then((response) => {
       console.log('success', response);
-      this.toggleNotification("Your beacon has been lit!");
+      this.toggleNotification('Your beacon has been lit!');
     })
     .catch((response) => {
       console.log('error', response);
-      this.toggleNotification("Yikes, there was an error");
+      this.toggleNotification('Yikes, there was an error');
     });
   },
 
@@ -54,12 +57,12 @@ const NewBeacon = React.createClass({
     this.setState({ topics: e.target.value });
   },
 
-  toggleNotification: function(message) {
+  toggleNotification: function (message) {
     console.log('NewBeacon.toggleNotification()');
     this.setState({
       isActive: !this.state.isActive,
       notification_message: message,
-    })
+    });
   },
 
   render: function () {
@@ -78,7 +81,7 @@ const NewBeacon = React.createClass({
       <div>
         <form className="new-beacon" onSubmit={this.submitBeacon}>
           <h1>Create New Beacon</h1>
-          <Input type="text" onChange={ this.titleUpdate } placeholder="Title" 
+          <Input type="text" onChange={ this.titleUpdate } placeholder="Title"
             required/>
           <Input type="textarea" onChange={ this.descriptionUpdate }
             placeholder="Description" required/>
@@ -99,7 +102,7 @@ const NewBeacon = React.createClass({
           action="Dismiss"
           onDismiss={this.toggleNotification}
           onClick={() =>  this.setState({ isActive: false })}
-        /> 
+        />
       </div>
     );
   },
