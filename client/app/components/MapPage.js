@@ -6,9 +6,21 @@ import getAllBeacons from '../utils/helpers';
 
 var MapPage = React.createClass({
   getInitialState: () => {
+    console.log('initialstate');
     return {
-      beacons: getAllBeacons(),
+      beacons: [],
     };
+  },
+
+  componentDidMount: function () {
+    console.log('component');
+    navigator.geolocation.getCurrentPosition((data) => {
+      getAllBeacons(data.coords.latitude, data.coords.longitude)
+      .then((response) => {
+        this.setState({ beacons: response });
+        renderBeacons();
+      });
+    });
   },
 
   renderBeacons: function () {
@@ -22,12 +34,11 @@ var MapPage = React.createClass({
         </Marker>
       );
     });
-
     return beacons;
   },
 
   render: function () {
-    const position = [51.505, -0.09];
+    const position = [43.16, -77.5];
     const mapStyle = { height: '100%' };
     return (
       <div className="map">

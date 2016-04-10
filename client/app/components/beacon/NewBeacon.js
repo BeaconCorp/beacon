@@ -1,8 +1,33 @@
 import React, { PropTypes } from 'react';
 import { Input, ButtonInput, Row, Col } from 'react-bootstrap';
+import createBeacon from '../../utils/helpers';
 
 const NewBeacon = React.createClass({
+  componentDidMount: function () {
+    navigator.geolocation.getCurrentPosition((data) => {
+      this.setState({
+        lat: data.coords.latitude,
+        lng: data.coords.longitude,
+      });
+    });
+  },
+
   submitBeacon: function (e) {
+    e.preventDefault();
+    console.log('submit beacon');
+    createBeacon({
+      title: this.state.title,
+      description: this.state.description,
+      topics: this.state.topics,
+      lat: this.state.lat,
+      lng: this.state.lng,
+    })
+    .then((response) => {
+      console.log('success', response);
+    })
+    .catch((response) => {
+      console.log('error', response);
+    });
   },
 
   titleUpdate: function (e) {
@@ -10,11 +35,11 @@ const NewBeacon = React.createClass({
   },
 
   descriptionUpdate: function (e) {
-    this.setState({ title: e.target.value });
+    this.setState({ description: e.target.value });
   },
 
   topicsUpdate: function (e) {
-    this.setState({ title: e.target.value });
+    this.setState({ topics: e.target.value });
   },
 
   render: function () {

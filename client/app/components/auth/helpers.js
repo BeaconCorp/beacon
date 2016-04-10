@@ -5,19 +5,15 @@ module.exports = {
   login(email, pass, cb) {
     console.log(pass);
     let hash = sha256(pass);
-    $.ajax({
-      url: 'http://localhost:6543/api/users/login',
-      type: 'POST',
-      data: JSON.stringify({
-        email: email,
-        password: hash,
-      }),
+    axios.get('http://beacon.mycodespace.net/api/users/login', {
+      email: email,
+      password: hash,
     })
-    .success((response) => {
+    .then((response) => {
       console.log(response);
       cb(true);
     })
-    .error((response) => {
+    .catch((response) => {
       console.log(response);
       cb(false);
     });

@@ -1,14 +1,24 @@
-export default function getAllBeacons() {
-  return [
-    {
-      lat: 51.505,
-      lng: -0.09,
-      description: 'nkjsndkfnj',
-    },
-    {
-      lat: 51.52,
-      lng: -0.07,
-      description: 'sjdkanj',
-    },
-  ];
+import axios from 'axios';
+
+export default function getAllBeacons(lat, lng) {
+
+  return axios.get('http://beacon.mycodespace.net/api/beacons', {
+    lat: lat,
+    lng: lng,
+    radius: 4,
+  });
 };
+
+export default function createBeacon(options) {
+  console.log(options);
+  return axios.post('http://beacon.mycodespace.net/api/beacons', {
+    title: options.title,
+    description: options.description,
+    radius: options.radius,
+    topics: options.topics,
+    expires: 30,
+    lat: options.lat,
+    lng: options.lng,
+    radius: 4,
+  });
+}
