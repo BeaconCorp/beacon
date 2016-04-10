@@ -1,6 +1,6 @@
 from uuid import uuid4
 import hashlib
-
+import re
 from time import sleep
 from random import randint
 import datetime
@@ -50,6 +50,17 @@ class CreationMixin():
 
     @classmethod
     def add(cls, **kwargs):
+
+        ####################################################
+        # remove any keys in the payload that don't belong
+        bad_keys = []
+        for key in kwargs:
+            if not key in cls.__dict__:
+                bad_keys.append(key)
+        for key in bad_keys:
+            del kwargs[key]
+        ####################################################
+
         thing = cls(**kwargs)
         if thing.id is None:
             thing.id = str(uuid4())
@@ -137,14 +148,6 @@ class Users(Base, TimeStampMixin, CreationMixin):
 
     @classmethod
     def create_new_user(cls, first, last, email, password, user_type):
-
-        '''
-        user_type:
-            admin
-            service_sales_manager
-            national_service_manager
-            regional_service_manager
-        '''
 
         user = None
         salt_bytes = hashlib.sha256(str(uuid4()).encode('utf-8')).hexdigest()
@@ -245,13 +248,13 @@ class Users(Base, TimeStampMixin, CreationMixin):
 
     def to_dict(self):
         resp = super(Users, self).to_dict()
-        resp.updte(
-            first = self.first,
-            last = self.last,
-            email = self.email,
-            user_type = self.user_type,
-            token = self.token,
-            token_expire_datetime = str(self.token_expire_datetime),
+        resp.update(
+            first=self.first,
+            last=self.last,
+            email=self.email,
+            user_type=self.user_type,
+            token=self.token,
+            token_expire_datetime=str(self.token_expire_datetime),
         )
         return resp
 
@@ -278,7 +281,7 @@ class Groups(Base, TimeStampMixin, CreationMixin):
     def to_dict(self):
         resp = super(Groups, self).to_dict()
         resp.update(
-            creator_id=self.creator_id,
+            creator_id=str(self.creator_id),
             topic=self.topic,
             description=self.description,
         )
@@ -290,33 +293,50 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     __tablename__ = 'beacons'
     creator_id = Column(ForeignKey('users.id'), nullable=False)
     group_id = Column(ForeignKey('groups.id'), nullable=True)
+    topics = Column(UnicodeText, nullable=False)
     description = Column(UnicodeText, nullable=False)
     lat = Column(Float, nullable=False)
     lng = Column(Float, nullable=False)
     radius = Column(Integer, nullable=False)
-    expires = Column(Integer, nullable=False) # number of fifteen minute intervals
+    expire_datetime = Column(Integer, nullable=False)
 
-    group = None
-    topics = None
+    _creator = None
+    _group = None
+    #_topics = None
 
     @classmethod
     def _decode_beacon(cls, _beacon):
         # pulls out the Beacons, Groups, and BeaconTopics objects from the tuple
-        beacon = _beacons[0]
-        beacon.group = _beacons[1]
-        beacon.topics = _beacons[2]
+        beacon = _beacon[0]
+        beacon._creator = _beacon[1]
+        #beacon.group = _beacon[2]
+        #beacon.topics = _beacon[3]
+        #beacon._topics = _beacon[2]
+
+        #print(beacon); raise Exception('debug')
+
+        #beacon = _beacon
+
         return beacon
 
     @classmethod
     def get_by_id(cls, _id):
         _beacon = DBSession.query(
             Beacons,
-            Groups,
-            BeaconTopics,
+            Users,
+            #Groups,
+            #BeaconTopics,
+            DBSession.query(
+                BeaconTopics,
+            ).filter(
+                BeaconTopics.beacon_id == Beacons.id,
+            ).label('topics')
         ).filter(
-            Groups.id == Beacons.group_id,
-        ).filter(
-            BeaconTopics.beacon_id == Beacons.id,
+            Users.id == Beacons.creator_id,    
+        #).filter(
+        #    Groups.id == Beacons.group_id,
+        #).filter(
+        #    BeaconTopics.beacon_id == Beacons.id,
         ).first()
 
         return Beacons._decode_beacon(_beacon)
@@ -325,12 +345,12 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     def get_paged(cls, start=0, count=50):
         _beacons = DBSession.query(
             Beacons,
-            Groups,
-            BeaconTopics,
+            Users,
+            #Groups,
         ).filter(
-            Groups.id == Beacons.group_id,
-        ).filter(
-            BeaconTopics.beacon_id == Beacons.id,
+            Users.id == Beacons.creator_id,
+        #).filter(
+        #    Groups.id == Beacons.group_id,
         ).slice(start, start+count)
 
         beacons = []
@@ -338,6 +358,55 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
             beacons.append(Beacons._decode_beacon(_beacon))
 
         return beacons
+
+    @classmethod
+    def get_by_location(cls, lat, lng, radius, start=0, count=50):
+
+        #
+        # before you read the below code: it doesn't matter.  really.
+        #
+        # 0.02 is ~ 1 mile, so 0.005 is ~0.25 miles.
+        # we support radius values of ..
+        #     1  = 0.25 miles
+        #     2  = 0.5  miles
+        #     4  = 1    miles
+        #     8  = 2    miles
+        #     20 = 5    miles
+        _radius = float(radius) * 0.005
+
+        top_left_lat = float(lat) + 90 - _radius
+        top_left_lng = float(lng) + 180 - _radius
+        bottom_right_lat = float(lat) + 90 + _radius
+        bottom_right_lng = float(lng) + 180 + _radius
+
+        _beacons = DBSession.query(
+            Beacons,
+            Users,
+            #Groups,
+        ).filter(
+            Users.id == Beacons.creator_id,
+        #).filter(
+        #    Groups.id == Beacons.group_id,
+        ).filter(
+            BeaconTopics.beacon_id == Beacons.id,
+        ).join(
+            BeaconTopics, BeaconTopics.beacon_id == Beacons.id,
+        ).filter(
+            ((top_left_lat < Beacons.lat + 90) &
+                (top_left_lng < Beacons.lng + 180) &
+                (bottom_right_lat > Beacons.lat + 90) &
+                (bottom_right_lng > Beacons.lng + 180))
+        ).slice(start, start+count).all()
+
+        print('\n\n')
+        print(_beacons)
+
+        beacons = []
+        for _beacon in _beacons:
+            beacons.append(Beacons._decode_beacon(_beacon))
+        
+        return beacons    
+
 
     @classmethod
     def search_by_location(cls, lat, lng, radius, start=0, count=50):
@@ -352,7 +421,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
         #     4  = 1    miles
         #     8  = 2    miles
         #     20 = 5    miles
-        _radius = radius * 0.005
+        _radius = float(radius) * 0.005
 
         top_left_lat = lat + 90 - _radius
         top_left_lng = lng + 180 - _radius
@@ -361,12 +430,14 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
 
         _beacons = DBSession.query(
             Beacons,
-            Groups,
-            BeaconTopics,
+            Users,
+            #Groups,
         ).filter(
-            Groups.id == Beacons.group_id,
-        ).filter(
-            BeaconTopics.beacon_id == Beacons.id,
+            Users.id == Beacons.creator_id,
+        #).filter(
+        #    Groups.id == Beacons.group_id,
+        ).join(
+            BeaconTopics, BeaconTopics.beacon_id == Beacons.id,
         ).filter(
             ((top_left_lat + 90 > Beacons.lat + 90) &
                 (top_left_lng + 180 < Beacons.lng + 180) &
@@ -380,13 +451,63 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
 
         return beacons
 
+    @classmethod
+    def search_by_topic(cls, topic, lat, lng, radius, start=0, count=50):
+
+        #
+        # before you read the below code: it doesn't matter.  really.
+        #
+        # 0.02 is ~ 1 mile, so 0.005 is ~0.25 miles.
+        # we support radius values of ..
+        #     1  = 0.25 miles
+        #     2  = 0.5  miles
+        #     4  = 1    miles
+        #     8  = 2    miles
+        #     20 = 5    miles
+        _radius = float(radius) * 0.005
+
+        top_left_lat = float(lat) + 90 - _radius
+        top_left_lng = float(lng) + 180 - _radius
+        bottom_right_lat = float(lat) + 90 + _radius
+        bottom_right_lng = float(lng) + 180 + _radius
+
+        _beacons = DBSession.query(
+            Beacons,
+            Users,
+            #Groups,
+        ).filter(
+            Users.id == Beacons.creator_id,
+        #).filter(
+        #    Groups.id == Beacons.group_id,
+        ).join(
+            BeaconTopics, BeaconTopics.beacon_id == Beacons.id,
+        ).filter(
+            BeaconTopics.beacon_id == Beacons.id,
+        ).filter(
+            BeaconTopics.topic == topic,
+        ).filter(
+            ((top_left_lat < Beacons.lat + 90) &
+                (top_left_lng < Beacons.lng + 180) &
+                (bottom_right_lat > Beacons.lat + 90) &
+                (bottom_right_lng > Beacons.lng + 180))
+        ).slice(start, start+count).all()
+
+        beacons = []
+        for _beacon in _beacons:
+            beacons.append(Beacons._decode_beacon(_beacon))
+        
+        return beacons    
+
     def to_dict(self):
         resp = super(Beacons, self).to_dict()
+
         resp.update(
-            creator_id=self.creator_id,
-            creator=self.creator,
-            group_id=self.group_id,
-            group=self.group,
+            creator_id=str(self.creator_id),
+            creator=self._creator.to_dict() if self._creator else None,
+            group_id=str(self.group_id),
+            #group=self._group.to_dict() if self._group else None,
+            #topics=[t.to_dict() for t in self._topics] if self._topics else None,
+            topics=re.sub(' +', ' ', self.topics).split(' '),
             description=self.description,
             lat=self.lat,
             lng=self.lng,
@@ -399,13 +520,13 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
 class BeaconTopics(Base, TimeStampMixin, CreationMixin):
 
     __tablename__ = 'beacon_topics'
-    beacon_id = Column(ForeignKey('beacon.id'))
+    beacon_id = Column(ForeignKey('beacons.id'))
     topic = Column(UnicodeText, nullable=False)
 
     def to_dict(self):
         resp = super(BeaconTopics, self).to_dict()
         resp.update(
-            beacon_id=self.beacon_id,
-            topic=self.topic,
+            beacon_id=str(self.beacon_id),
+            topic=str(self.topic),
         )
         return resp

@@ -15,8 +15,8 @@ from .models import (
 )
 
 import json
-
 import datetime
+import re
 
 def get_payload(request):
     try:
@@ -58,6 +58,7 @@ def authenticate(request):
         user = Users.get_by_token(token)
     return user 
 
+
 class BaseRequest(object):
 
     def __init__(self, request):
@@ -77,9 +78,9 @@ class BaseRequest(object):
         return False
 
     def validate(self):
-        print('\n\nPAYLOAD\n\n')
-        print(self.payload)
-        print(self.req)
+        #print('\n\nPAYLOAD\n\n')
+        #print(self.payload)
+        #print(self.req)
         if self.payload and all(r in self.payload for r in self.req):
             return True
         self.request.response.status = 400
@@ -296,6 +297,7 @@ class TopicsAPI(BaseRequest):
             resp = self._get_collection()
         return resp
 
+
 '''
 @view_defaults(route_name='/api/topics/{id}', renderer='json')
 class TopicAPI(BaseRequest):
@@ -335,7 +337,7 @@ class TopicAPI(BaseRequest):
 '''
 
 
-@view_defaults(route_name='/api/groups')
+@view_defaults(route_name='/api/groups', renderer='json')
 class GroupsAPI(BaseRequest):
 
     req = (
@@ -358,7 +360,7 @@ class GroupsAPI(BaseRequest):
         return resp
 
     #[ POST ]
-    @view_config(request_method='POST', renderer='json')
+    @view_config(request_method='POST')
     def post(self):
         resp = {}
         if self.auth():
@@ -405,17 +407,18 @@ class GroupAPI(BaseRequest):
         return resp
 
 
-@view_defaults(route_name='/api/beacons')
+@view_defaults(route_name='/api/beacons', renderer='json')
 class BeaconsAPI(BaseRequest):
 
     req = (
         #'creator_id',
         #'group_id',
+        #'topics',
         'description',
         'lat',
         'lng',
         'radius',
-        #'expire_datetime',
+        #'expires',
     )
 
     cls = Beacons
@@ -428,15 +431,61 @@ class BeaconsAPI(BaseRequest):
     def get(self):
         resp = {}
         if self.auth():
-            resp = self._get_collection()
+            if all(r in self.request.GET for r in ('lat', 'lng', 'radius')) and self.request.GET['radius'].isdigit():
+                beacons = Beacons.get_by_location(
+                    lat=self.request.GET['lat'],
+                    lng=self.request.GET['lng'],
+                    radius=self.request.GET['radius'],
+                    start=self.start,
+                    count=self.count,
+                )
+                if beacons:
+                    resp = [b.to_dict() for b in beacons]
+            else:
+                self.request.response.status = 400
         return resp
 
     #[ POST ]
-    @view_config(request_method='POST', renderer='json')
+    @view_config(request_method='POST')
     def post(self):
         resp = {}
         if self.auth():
-            resp = self._post()
+            if all(r in self.payload for r in ('topics', 'expires')):
+
+                # create the beacon
+                self.payload.update(
+                    creator_id=self.user.id,
+                    expire_datetime=datetime.datetime.now() + \
+                        datetime.timedelta(minutes=self.payload['expires'])
+                )
+                beacon = self.cls.add(**self.payload)
+                
+                # create the beacon topics
+                valid_topics = True
+                topics = re.sub(' +', ' ', self.payload['topics']).split(' ')
+                _topics = []
+                for topic in topics:
+                    beacon_topic = BeaconTopics.add(
+                        beacon_id=beacon.id,
+                        topic=topic.replace('#','').replace(',','').lower(),
+                    )
+                    if not beacon_topic:
+                        valid_topics = False
+                        break
+                    _topics.append(beacon_topic)
+
+                # validate output product
+                if beacon and valid_topics:
+                    #resp = dict(
+                    #    beacon=beacon.to_dict(),
+                    #    topics=[t.to_dict() for t in _topics],
+                    #)
+                    resp = beacon.to_dict()
+                else:
+                    self.request.response.status = 400
+            else:
+                self.request.response.status = 400
+
         return resp
 
 
@@ -480,4 +529,40 @@ class BeaconAPI(BaseRequest):
         resp = {}
         if self.auth():
             resp = self._delete()
+        return resp
+
+@view_defaults(route_name='/api/beacons/_search', renderer='json')
+class BeaconSearchAPI(BaseRequest):
+
+    req = (
+        'topic',
+        'lat',
+        'lng',
+        'radius',
+    )
+
+    cls = Beacons
+
+    def __init__(self, request):
+        super(BeaconSearchAPI, self).__init__(request)
+
+    #[ GET ]
+    @view_config(request_method='GET')
+    def get(self):
+        resp = {}
+        if self.auth():
+            if all(r in self.request.GET for r in self.req) and self.request.GET['radius'].isdigit():
+
+                topic = self.request.GET['topic'].replace('#','').lower()
+                beacons = Beacons.search_by_topic(
+                    topic=topic,
+                    lat=self.request.GET['lat'],
+                    lng=self.request.GET['lng'],
+                    radius=self.request.GET['radius'],
+                    start=self.start,
+                    count=self.count,
+                )
+                resp = [b.to_dict() for b in beacons]
+            else:
+                self.request.response.status = 400
         return resp

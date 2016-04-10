@@ -38,9 +38,9 @@ def main(argv=sys.argv):
     Base.metadata.create_all(engine)
 
     Users.create_new_user(
-        is_admin = True,
         first = 'SYSTEM',
         last = 'USER',
         email = 'system',
         password = hashlib.sha256('password'.encode('utf-8')).hexdigest(),
+        user_type = 1,
     )

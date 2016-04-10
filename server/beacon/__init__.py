@@ -67,6 +67,7 @@ def main(global_config, **settings):
     config.add_route('/api/groups/{id}', '/api/groups/{id}')
 
     config.add_route('/api/beacons', '/api/beacons')
+    config.add_route('/api/beacons/_search', '/api/beacons/_search')
     config.add_route('/api/beacons/{id}', '/api/beacons/{id}')
         
     #config.add_route('/api/beacon_topics', '/api/beacon_topics')
