@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 
 import getAllBeacons from '../utils/helpers';
@@ -37,9 +38,9 @@ var MapPage = React.createClass({
           />
         { this.renderBeacons() }
         </Map>
-        <a href="javascript:void(0)" className="btn btn-primary btn-fab add-beacon">
+        <Link to='new-beacon' className="btn btn-primary btn-fab add-beacon">
           <i className="material-icons">add</i>
-        </a>
+        </Link>
       </div>
     );
   },

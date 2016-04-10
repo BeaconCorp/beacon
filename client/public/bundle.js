@@ -24764,6 +24764,10 @@
 
 	var _SettingsPage2 = _interopRequireDefault(_SettingsPage);
 
+	var _NewBeacon = __webpack_require__(660);
+
+	var _NewBeacon2 = _interopRequireDefault(_NewBeacon);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	module.exports = _react2.default.createElement(
@@ -24772,7 +24776,8 @@
 	  _react2.default.createElement(_reactRouter.IndexRoute, { component: _MapPage2.default }),
 	  _react2.default.createElement(_reactRouter.Route, { path: 'group', component: _GroupsPage2.default }),
 	  _react2.default.createElement(_reactRouter.Route, { path: 'profile', component: _ProfilePage2.default }),
-	  _react2.default.createElement(_reactRouter.Route, { path: 'settings', component: _SettingsPage2.default })
+	  _react2.default.createElement(_reactRouter.Route, { path: 'settings', component: _SettingsPage2.default }),
+	  _react2.default.createElement(_reactRouter.Route, { path: 'new-beacon', component: _NewBeacon2.default })
 	);
 
 /***/ },
@@ -41763,6 +41768,8 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactRouter = __webpack_require__(159);
+
 	var _reactLeaflet = __webpack_require__(219);
 
 	var _helpers = __webpack_require__(659);
@@ -41817,8 +41824,8 @@
 	        this.renderBeacons()
 	      ),
 	      _react2.default.createElement(
-	        'a',
-	        { href: 'javascript:void(0)', className: 'btn btn-primary btn-fab add-beacon' },
+	        _reactRouter.Link,
+	        { to: 'new-beacon', className: 'btn btn-primary btn-fab add-beacon' },
 	        _react2.default.createElement(
 	          'i',
 	          { className: 'material-icons' },
@@ -59781,6 +59788,75 @@
 	    description: 'sjdkanj'
 	  }];
 	};
+
+/***/ },
+/* 660 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactBootstrap = __webpack_require__(402);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var NewBeacon = _react2.default.createClass({
+	  displayName: 'NewBeacon',
+
+	  submitBeacon: function submitBeacon(e) {},
+
+	  titleUpdate: function titleUpdate(e) {
+	    this.setState({ title: e.target.value });
+	  },
+
+	  descriptionUpdate: function descriptionUpdate(e) {
+	    this.setState({ title: e.target.value });
+	  },
+
+	  topicsUpdate: function topicsUpdate(e) {
+	    this.setState({ title: e.target.value });
+	  },
+
+	  render: function render() {
+	    return _react2.default.createElement(
+	      'form',
+	      { className: 'new-beacon', onSubmit: this.submitBeacon },
+	      _react2.default.createElement(
+	        'h1',
+	        null,
+	        'Create New Beacon'
+	      ),
+	      _react2.default.createElement(_reactBootstrap.Input, { type: 'text', onChange: this.titleUpdate, placeholder: 'Title' }),
+	      _react2.default.createElement(_reactBootstrap.Input, { type: 'textarea', onChange: this.descriptionUpdate,
+	        placeholder: 'Description' }),
+	      _react2.default.createElement(_reactBootstrap.Input, { type: 'text', onChange: this.descriptionUpdate,
+	        placeholder: 'Topics' }),
+	      _react2.default.createElement(
+	        _reactBootstrap.Row,
+	        null,
+	        _react2.default.createElement(
+	          _reactBootstrap.Col,
+	          { xs: 6 },
+	          _react2.default.createElement(_reactBootstrap.ButtonInput, { type: 'reset', value: 'Reset Button' })
+	        ),
+	        _react2.default.createElement(
+	          _reactBootstrap.Col,
+	          { xs: 6 },
+	          _react2.default.createElement(_reactBootstrap.ButtonInput, { type: 'submit', value: 'Submit Button' })
+	        )
+	      )
+	    );
+	  }
+	});
+
+	exports.default = NewBeacon;
 
 /***/ }
 /******/ ]);

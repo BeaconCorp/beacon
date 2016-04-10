@@ -21,3 +21,14 @@ html, body {
   right: 10px;
   bottom: 20px;
 }
+
+.new-beacon {
+  margin: 0 10px;
+}
+
+.btn:focus:not(.btn-raised):not(.btn-link),
+ .btn:hover:not(.btn-raised):not(.btn-link),
+ .input-group-btn .btn:focus:not(.btn-raised):not(.btn-link),
+ .input-group-btn .btn:hover:not(.btn-raised):not(.btn-link) {
+   background-color: #009688;
+ }
