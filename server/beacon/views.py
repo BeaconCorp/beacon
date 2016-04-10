@@ -8,7 +8,6 @@ from sqlalchemy.exc import DBAPIError
 from .models import (
     DBSession,
     Users,
-    Topics,
     Groups,
     Beacons,
     BeaconTopics,
@@ -65,6 +64,9 @@ class BaseRequest(object):
 
     def __init__(self, request):
         self.request = request
+        #self.request.response.charset = 'utf8'
+        self.request.response.headerlist.append(('Access-Control-Allow-Origin', '*'))
+        self.request.response.content_type = 'application/json'
         self.start, self.count = build_paging(request)
         self.user = authenticate(request)
         self.payload = get_payload(request)
@@ -152,7 +154,7 @@ class Index(object):
         return {}
 
 
-@view_defaults(route_name='/api/users/login', renderer='json')
+@view_defaults(route_name='/api/users/login')
 class UserLoginAPI(BaseRequest):
 
     req = (
@@ -164,7 +166,7 @@ class UserLoginAPI(BaseRequest):
         super(UserLoginAPI, self).__init__(request)
 
     #[ GET ] - check if logged in
-    @view_config(request_method='GET')
+    @view_config(request_method='GET', renderer='json')
     def get(self):
         resp = {'loggedin': False}
         if self.user:
@@ -174,16 +176,20 @@ class UserLoginAPI(BaseRequest):
     #[ POST ] - perform login
     @view_config(request_method='POST')
     def post(self):
-        resp = {}
+        resp = Response(json.dumps({}), content_type='application/json')
+        resp.status_code = 403
         if self.validate():
             email = self.payload['email']
             password = self.payload['password']
             self.user = Users.authenticate(email, password)
+            print(email, password, self.user)
             if self.auth():
                 self.request.session['token'] = self.user.token
                 _user = self.user.to_dict()
                 _user.update(token=self.user.token)
-                resp = _user
+                #resp = _user
+                resp = Response(json.dumps(_user), content_type='application/json')
+                resp.status_code = 200
         return resp
 
 
@@ -338,67 +344,12 @@ class UserAPI(BaseRequest):
         return resp
 
 
-@view_defaults(route_name='/api/topics')
-class TopicsAPI(BaseRequest):
-
-    cls = Topics
-
-    def __init__(self, request):
-        super(TopicsAPI, self).__init__(request)
-
-    #[ GET ]
-    @view_config(request_method='GET')
-    def get(self):
-        resp = {}
-        if self.auth():
-            resp = self._get_collection()
-        return resp
-
-
-'''
-@view_defaults(route_name='/api/topics/{id}', renderer='json')
-class TopicAPI(BaseRequest):
-
-    req = (
-        'topic',
-    )
-
-    cls = Topics
-
-    def __init__(self, request):
-        super(TopicAPI, self).__init__(request)
-
-    #[ GET ]
-    @view_config(request_method='GET')
-    def get(self):
-        resp = {}
-        if self.auth():
-            resp = self._get()
-        return resp
-
-    #[ PUT ]
-    @view_config(request_method='PUT')
-    def put(self):
-        resp = {}
-        if self.auth():
-            resp = self._put()
-        return resp
-
-    #[ DELETE ]
-    @view_config(request_method='DELETE')
-    def delete(self):
-        resp = {}
-        if self.auth():
-            resp = self._delete()
-        return resp
-'''
-
-
 @view_defaults(route_name='/api/groups', renderer='json')
 class GroupsAPI(BaseRequest):
 
     req = (
         #'creator_id',
+        'title',
         'topic',
         'description',
     )
@@ -413,7 +364,32 @@ class GroupsAPI(BaseRequest):
     def get(self):
         resp = {}
         if self.auth():
-            resp = self._get_collection()
+            if all(r in self.request.GET for r in ('lat', 'lng', 'radius')) and self.request.GET['radius'].isdigit():
+
+                # perform a topic search
+                if 'topic' in self.request.GET:
+                    groups = Groups.search_by_topic(
+                        topic=self.request.GET['topic'],
+                        #lat=self.request.GET['lat'],
+                        #lng=self.request.GET['lng'],
+                        #radius=self.request.GET['radius'],
+                        start=self.start,
+                        count=self.count,
+                    )
+
+                # get all groups in the radius
+                else:
+                    groups = Groups.search_by_location(
+                        lat=self.request.GET['lat'],
+                        lng=self.request.GET['lng'],
+                        radius=self.request.GET['radius'],
+                        start=self.start,
+                        count=self.count,
+                    )
+
+                if groups:
+                    resp = [g.to_dict() for g in groups]
+
         return resp
 
     #[ POST ]
@@ -421,7 +397,11 @@ class GroupsAPI(BaseRequest):
     def post(self):
         resp = {}
         if self.auth():
-            resp = self._post()
+            if self.validate():
+                self.payload.update(
+                    creator_id=self.user.id,
+                )
+                resp = self._post()
         return resp
 
 
@@ -430,6 +410,7 @@ class GroupAPI(BaseRequest):
 
     req = (
         #'creator_id',
+        'title',
         'topic',
         'description',
     )
@@ -534,10 +515,6 @@ class BeaconsAPI(BaseRequest):
 
                 # validate output product
                 if beacon and valid_topics:
-                    #resp = dict(
-                    #    beacon=beacon.to_dict(),
-                    #    topics=[t.to_dict() for t in _topics],
-                    #)
                     resp = beacon.to_dict()
                 else:
                     self.request.response.status = 400

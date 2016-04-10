@@ -220,6 +220,8 @@ class Users(Base, TimeStampMixin, CreationMixin):
     @classmethod
     def authenticate(cls, email, password):
         _user = Users.get_by_email(email)
+        print('\nUser:\n')
+        print(_user)
         user = None
         if _user is not None:
             if isinstance(_user.pass_salt, bytes):
@@ -231,6 +233,7 @@ class Users(Base, TimeStampMixin, CreationMixin):
             pass_bytes = hashlib.sha256(password.encode('utf-8')).hexdigest()
             pass_val = pass_bytes + salt_bytes
             pass_hash = hashlib.sha256(pass_val.encode('utf-8')).hexdigest()
+            print(_user.pass_hash == pass_hash)
             if (_user.pass_hash == pass_hash):
                 token = str(uuid4())
                 # does not expire for 10 years
@@ -289,24 +292,35 @@ class Users(Base, TimeStampMixin, CreationMixin):
         return resp
 
 
-class Topics(Base, TimeStampMixin, CreationMixin):
-
-    __tablename__ = 'topics'
-    topic = Column(UnicodeText, nullable=False)
-
-    def to_dict(self):
-        resp = super(Topics, self).to_dict()
-        resp.update(
-            topic=self.topic,
-        )
-
-
 class Groups(Base, TimeStampMixin, CreationMixin):
 
     __tablename__ = 'groups'
     creator_id = Column(ForeignKey('users.id'), nullable=False)
+    title = Column(UnicodeText, nullable=False)
     topic = Column(UnicodeText, nullable=False)
     description = Column(UnicodeText, nullable=False)
+
+    @classmethod
+    def search_by_location(cls, lat, lng, radius, start=0, count=50):
+        
+        # 0.005 is ~ 0.25 miles
+        _radius = float(radius) * 0.005
+
+        top_left_lat = float(lat) + 90 - _radius
+        top_left_lng = float(lng) + 180 - _radius
+        bottom_right_lat = float(lat) + 90 + _radius
+        bottom_right_lng = float(lng) + 180 + _radius
+
+        DBSession.query(
+            Groups,
+        ).filter(
+            ((top_left_lat < Beacons.lat + 90) &
+                (top_left_lng < Beacons.lng + 180) &
+                (bottom_right_lat > Beacons.lat + 90) &
+                (bottom_right_lng > Beacons.lng + 180))
+        ).slice(start, start+count).all()
+
+        return groups
 
     def to_dict(self):
         resp = super(Groups, self).to_dict()
@@ -384,16 +398,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     @classmethod
     def get_by_location(cls, lat, lng, radius, start=0, count=50):
 
-        #
-        # before you read the below code: it doesn't matter.  really.
-        #
-        # 0.02 is ~ 1 mile, so 0.005 is ~0.25 miles.
-        # we support radius values of ..
-        #     1  = 0.25 miles
-        #     2  = 0.5  miles
-        #     4  = 1    miles
-        #     8  = 2    miles
-        #     20 = 5    miles
+        # 0.005 is ~ 0.25 miles
         _radius = float(radius) * 0.005
 
         top_left_lat = float(lat) + 90 - _radius
@@ -433,16 +438,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     @classmethod
     def search_by_location(cls, lat, lng, radius, start=0, count=50):
 
-        #
-        # before you read the below code: it doesn't matter.  really.
-        #
-        # 0.02 is ~ 1 mile, so 0.005 is ~0.25 miles.
-        # we support radius values of ..
-        #     1  = 0.25 miles
-        #     2  = 0.5  miles
-        #     4  = 1    miles
-        #     8  = 2    miles
-        #     20 = 5    miles
+        # 0.005 is ~ 0.25 miles
         _radius = float(radius) * 0.005
 
         top_left_lat = lat + 90 - _radius
@@ -476,16 +472,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     @classmethod
     def search_by_topic(cls, topic, lat, lng, radius, start=0, count=50):
 
-        #
-        # before you read the below code: it doesn't matter.  really.
-        #
-        # 0.02 is ~ 1 mile, so 0.005 is ~0.25 miles.
-        # we support radius values of ..
-        #     1  = 0.25 miles
-        #     2  = 0.5  miles
-        #     4  = 1    miles
-        #     8  = 2    miles
-        #     20 = 5    miles
+        # 0.005 is ~ 0.25 miles
         _radius = float(radius) * 0.005
 
         top_left_lat = float(lat) + 90 - _radius

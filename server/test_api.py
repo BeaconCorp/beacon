@@ -72,13 +72,15 @@ def register_user(first, last, email, gender, bio, birthdate_datetime, zipcode, 
     )
 
     url = base_url + '/api/users/register'
+    print(url)
+    print(json.dumps(payload, indent=4))
 
     resp = requests.post(url, json.dumps(payload))
 
     user = json.loads(resp.text)
 
     print(resp.status_code)
-    print(user)
+    print(json.dumps(user, indent=4))
 
     return user
 
@@ -127,6 +129,8 @@ if __name__ == '__main__':
 
     now = datetime.datetime.now()
 
+    print('\nRegistering new user ...')
+
     email = 'a@a.com'
     password = hashlib.sha256('password'.encode('utf-8')).hexdigest()
 
@@ -141,12 +145,12 @@ if __name__ == '__main__':
         password=password,
     )
 
-    #email = 'system'
+    print('\nDone.\n')
 
-    print('Logging in ...')
+    print('\nLogging in ...')
     sys_user = do_login(email, password)
     token = sys_user['token']
-    print('... Done.\n')
+    print('.Done.\n')
 
     print("\nCreating Beacon:\n")
 
