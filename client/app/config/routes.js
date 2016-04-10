@@ -7,6 +7,7 @@ import GroupsPage from '../components/GroupsPage';
 import ProfilePage from '../components/ProfilePage';
 import SettingsPage from '../components/SettingsPage';
 import NewBeacon from '../components/beacon/NewBeacon';
+import Login from '../components/auth/Login';
 
 module.exports = (
   <Route path="/" component={Main}>
@@ -15,5 +16,6 @@ module.exports = (
     <Route path="profile" component={ProfilePage}></Route>
     <Route path="settings" component={SettingsPage}></Route>
     <Route path="new-beacon" component={NewBeacon}></Route>
+    <Route path="login" component={Login}></Route>
   </Route>
 );
