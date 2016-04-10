@@ -20,10 +20,12 @@ import re
 
 def get_payload(request):
     try:
+    #if True:
+        print(request.body)
         payload = request.json_body
-        #for key in payload:
-        #    if '_datetime' in key:
-        #        payload[key] = datetime.datetime.strptime(payload[key], '%m/%d/%Y')
+        for key in payload:
+            if '_datetime' in key:
+                payload[key] = datetime.datetime.strptime(payload[key], '%Y-%m-%d')
     except:
         payload = None
     return payload
@@ -202,6 +204,56 @@ class UserLogoutAPI(BaseRequest):
                 user = Users.invalidate_token(token)
                 if not user:
                     self.request.response.status = 403
+        return resp
+
+
+@view_defaults(route_name='/api/users/register', renderer='json')
+class RegisterUserAPI(BaseRequest):
+
+    req = (
+        'first',
+        'last',
+        'email',
+        'gender',
+        'bio',
+        'birthday_datetime',
+        'zipcode',
+        'password',
+    )
+
+    def __init__(self, request):
+        super(RegisterUserAPI, self).__init__(request)
+
+    #[ POST ] - logs the user out
+    @view_config(request_method='POST')
+    def post(self):
+        resp = {}
+        print('\n\n')
+        print(self.payload)
+        print('\n\n')
+        if self.validate():
+            user = Users.create_new_user(
+                first=self.payload['first'],
+                last=self.payload['last'],
+                email=self.payload['email'],
+                gender=self.payload['gender'],
+                bio=self.payload['bio'],
+                birthday_datetime=self.payload['birthday_datetime'],
+                zipcode=self.payload['zipcode'],
+                password=self.payload['password'],
+                user_type=3, # set as normal user, not admin
+            )
+            if user:
+                resp = user.to_dict()
+                self.request.response.status = 201
+            else:
+                self.request.response.status = 400
+        #if 'token' in self.request.session:
+        #    token = self.request.session['token']
+        #    if token:
+        #        user = Users.invalidate_token(token)
+        #        if not user:
+        #            self.request.response.status = 403
         return resp  
 
 
@@ -212,8 +264,10 @@ class UsersAPI(BaseRequest):
         'first',
         'last',
         'email',
+        'bio',
+        'birthday_datetime',
+        'zipcode',
         'password',
-        'user_type',
     )
 
     def __init__(self, request):
@@ -245,7 +299,7 @@ class UsersAPI(BaseRequest):
                     resp = user.to_dict()
                     self.request.response.status = 201
                 else:
-                    self.request.response.status = 500
+                    self.request.response.status = 400
         return resp
 
 
@@ -256,7 +310,10 @@ class UserAPI(BaseRequest):
         'first',
         'last',
         'email',
-        'user_type',
+        'bio',
+        'birthday_datetime',
+        'zipcode',
+        'password',
     )
 
     cls = Users
@@ -413,12 +470,13 @@ class BeaconsAPI(BaseRequest):
     req = (
         #'creator_id',
         #'group_id',
-        #'topics',
+        'title',
         'description',
         'lat',
         'lng',
         'radius',
-        #'expires',
+        'topics',
+        'expires',
     )
 
     cls = Beacons
@@ -450,7 +508,7 @@ class BeaconsAPI(BaseRequest):
     def post(self):
         resp = {}
         if self.auth():
-            if all(r in self.payload for r in ('topics', 'expires')):
+            if self.validate():
 
                 # create the beacon
                 self.payload.update(
@@ -462,7 +520,7 @@ class BeaconsAPI(BaseRequest):
                 
                 # create the beacon topics
                 valid_topics = True
-                topics = re.sub(' +', ' ', self.payload['topics']).split(' ')
+                topics = re.sub(' +', ' ', self.payload['topics'].replace('#', ' #')).split(' ')
                 _topics = []
                 for topic in topics:
                     beacon_topic = BeaconTopics.add(

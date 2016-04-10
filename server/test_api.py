@@ -1,6 +1,7 @@
 import requests
 import json
 import hashlib
+import datetime
 
 base_url = 'http://localhost:6543'
 
@@ -37,10 +38,10 @@ def do_post(token, model, payload):
     data = json.dumps(payload)
     url = build_url(model, token)
     resp = requests.post(build_url(model, token), data)
-    print(data)
-    print(url)
-    print(resp.status_code)
-    print(resp.text)
+    #print(data)
+    #print(url)
+    #print(resp.status_code)
+    #print(resp.text)
     return json.loads(resp.text)
 
 
@@ -56,6 +57,30 @@ def do_load(token, model, fields, data):
         resp.append(r)
     return resp
 
+
+def register_user(first, last, email, gender, bio, birthdate_datetime, zipcode, password):
+
+    payload = dict(
+        first=first,
+        last=last,
+        email=email,
+        gender=gender,
+        bio=bio,
+        birthday_datetime=str(birthdate_datetime).split(' ')[0],
+        zipcode=zipcode,
+        password=password,
+    )
+
+    url = base_url + '/api/users/register'
+
+    resp = requests.post(url, json.dumps(payload))
+
+    user = json.loads(resp.text)
+
+    print(resp.status_code)
+    print(user)
+
+    return user
 
 def create_beacon(token, topics, description, lat, lng, radius, expires):
 
@@ -99,8 +124,24 @@ if __name__ == '__main__':
 
     print('Start\n')
 
-    print('Getting Token ...')
-    sys_user = do_login('system', 'password')
+    now = datetime.datetime.now()
+
+    email = 'a@a.com'
+    password = hashlib.sha256('password'.encode('utf-8')).hexdigest()
+
+    register_user(
+        first='Nota',
+        last='Roboterton',
+        email=email,
+        gender=5,
+        bio='I may or may not be human ...',
+        birthdate_datetime=now.replace(now.year - 21),
+        zipcode="90210",
+        password=password,
+    )
+
+    print('Logging in ...')
+    sys_user = do_login(email, password)
     token = sys_user['token']
     print('... Done.\n')
 
@@ -144,4 +185,5 @@ if __name__ == '__main__':
         lng=-77.6109,
         radius=4,
     )
+
 

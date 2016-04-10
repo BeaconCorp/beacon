@@ -134,11 +134,18 @@ class Users(Base, TimeStampMixin, CreationMixin):
     first = Column(UnicodeText, nullable=False)
     last = Column(UnicodeText, nullable=False)
     email = Column(UnicodeText, nullable=False)
+    gender = Column(UnicodeText, nullable=False)
+    bio = Column(UnicodeText, nullable=False)
+    birthday_datetime = Column(DateTime, nullable=False)
+    zipcode = Column(UnicodeText, nullable=False)
     pass_salt = Column(UnicodeText, nullable=False)
     pass_hash = Column(UnicodeText, nullable=False)
+    
     user_type = Column(Integer, nullable=False)
+
     token = Column(UnicodeText, nullable=True)
     token_expire_datetime = Column(DateTime, nullable=True)
+    
     disabled = Column(Boolean, nullable=False)
 
     def generate_api_key(self):
@@ -147,7 +154,15 @@ class Users(Base, TimeStampMixin, CreationMixin):
         return self
 
     @classmethod
-    def create_new_user(cls, first, last, email, password, user_type):
+    def create_new_user(cls, first, last, email, gender, bio, birthday_datetime, zipcode, password, user_type):
+
+        #
+        # gender:
+        #  1 : male
+        #  2 : female
+        #  3 : rather not say
+        #  4 : i don't know
+        #  5 : yes.
 
         user = None
         salt_bytes = hashlib.sha256(str(uuid4()).encode('utf-8')).hexdigest()
@@ -159,6 +174,10 @@ class Users(Base, TimeStampMixin, CreationMixin):
             first=first,
             last=last,
             email=email,
+            gender=gender,
+            bio=bio,
+            birthday_datetime=birthday_datetime,
+            zipcode=zipcode,
             pass_salt=salt_bytes,
             pass_hash=pass_hash,
             user_type=user_type,
@@ -246,16 +265,27 @@ class Users(Base, TimeStampMixin, CreationMixin):
         return user
 
 
-    def to_dict(self):
+    def to_dict(self, me=False, full=False):
         resp = super(Users, self).to_dict()
         resp.update(
             first=self.first,
             last=self.last,
-            email=self.email,
-            user_type=self.user_type,
-            token=self.token,
-            token_expire_datetime=str(self.token_expire_datetime),
+            gender=self.gender,
+            bio=self.bio,
+            birthday_datetime=str(self.birthday_datetime).split(' ')[0],
         )
+        if me:
+            resp.update(
+                token=self.token,
+                token_expire_datetime=str(self.token_expire_datetime),
+            )
+        if full:
+            resp.update(
+                email=self.email,
+                user_type=self.user_type,
+                zipcode=self.zipcode,
+                disabled=self.disabled,
+            )
         return resp
 
 
@@ -293,6 +323,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
     __tablename__ = 'beacons'
     creator_id = Column(ForeignKey('users.id'), nullable=False)
     group_id = Column(ForeignKey('groups.id'), nullable=True)
+    title = Column(UnicodeText, nullable=False)
     topics = Column(UnicodeText, nullable=False)
     description = Column(UnicodeText, nullable=False)
     lat = Column(Float, nullable=False)
@@ -306,17 +337,8 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
 
     @classmethod
     def _decode_beacon(cls, _beacon):
-        # pulls out the Beacons, Groups, and BeaconTopics objects from the tuple
         beacon = _beacon[0]
         beacon._creator = _beacon[1]
-        #beacon.group = _beacon[2]
-        #beacon.topics = _beacon[3]
-        #beacon._topics = _beacon[2]
-
-        #print(beacon); raise Exception('debug')
-
-        #beacon = _beacon
-
         return beacon
 
     @classmethod
@@ -507,6 +529,7 @@ class Beacons(Base, TimeStampMixin, CreationMixin):
             group_id=str(self.group_id),
             #group=self._group.to_dict() if self._group else None,
             #topics=[t.to_dict() for t in self._topics] if self._topics else None,
+            title=self.title,
             topics=re.sub(' +', ' ', self.topics).split(' '),
             description=self.description,
             lat=self.lat,

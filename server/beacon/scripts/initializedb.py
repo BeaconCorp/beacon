@@ -1,5 +1,7 @@
 import os
 import sys
+import datetime
+
 import transaction
 
 from sqlalchemy import engine_from_config
@@ -41,6 +43,10 @@ def main(argv=sys.argv):
         first = 'SYSTEM',
         last = 'USER',
         email = 'system',
+        gender = 5,
+        bio = 'System User',
+        birthday_datetime=datetime.datetime.now(),
+        zipcode = "00000",
         password = hashlib.sha256('password'.encode('utf-8')).hexdigest(),
         user_type = 1,
     )
