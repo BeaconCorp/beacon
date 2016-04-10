@@ -7,7 +7,17 @@ html, body {
   height: 100%;
 }
 
+.navbar {
+  margin: 0 !important;
+}
+
 .map {
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - 60px);
+}
+
+.add-beacon {
+  position: fixed !important;
+  right: 10px;
+  bottom: 20px;
 }

@@ -63,3 +63,4 @@ target/
 
 # Javascript
 node_modules
+bundle.js
