@@ -42702,7 +42702,7 @@
 	        _react2.default.createElement(
 	          'i',
 	          { className: 'material-icons' },
-	          'add'
+	          '+'
 	        )
 	      )
 	    );
@@ -59564,7 +59564,7 @@
 
 	function createBeacon(options) {
 	  var token = _helpers2.default.getToken();
-	  return _axios2.default.post('http://beacon.mycodespace.net/api/beacons?token=' + token, _defineProperty({
+	  return _axios2.default.post('http://raisethebeacon.com/api/beacons?token=' + token, _defineProperty({
 	    title: options.title,
 	    description: options.description,
 	    radius: options.radius,
@@ -59577,7 +59577,7 @@
 
 	function getAllBeacons(lat, lng) {
 	  var token = _helpers2.default.getToken();
-	  return _axios2.default.get('http://beacon.mycodespace.net/api/beacons', {
+	  return _axios2.default.get('http://raisethebeacon.com/api/beacons', {
 	    params: {
 	      lat: lat,
 	      lng: lng,
@@ -60698,7 +60698,7 @@
 	  login: function login(email, pass, cb) {
 	    console.log(pass);
 	    var hash = (0, _jsSha2.default)(pass);
-	    _axios2.default.post('http://beacon.mycodespace.net/api/users/login', {
+	    _axios2.default.post('http://raisethebeacon.com/api/users/login', {
 	      email: email,
 	      password: hash
 	    }).then(function (response) {
@@ -61063,6 +61063,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactRouter = __webpack_require__(159);
+
+	var _reactRouter2 = _interopRequireDefault(_reactRouter);
+
 	var _reactBootstrap = __webpack_require__(218);
 
 	var _reactNotification = __webpack_require__(673);
@@ -61109,6 +61113,7 @@
 	    (0, _helpers.createBeacon)(options).then(function (response) {
 	      console.log('success', response);
 	      _this2.toggleNotification('Your beacon has been lit!');
+	      _reactRouter2.default.browserHistory.push('/');
 	    }).catch(function (response) {
 	      console.log('error', response);
 	      _this2.toggleNotification('Yikes, there was an error');

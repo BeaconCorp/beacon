@@ -5,7 +5,7 @@ module.exports = {
   login(email, pass, cb) {
     console.log(pass);
     let hash = sha256(pass);
-    axios.post('http://beacon.mycodespace.net/api/users/login', {
+    axios.post('http://raisethebeacon.com/api/users/login', {
       email: email,
       password: hash,
     })

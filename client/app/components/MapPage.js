@@ -57,7 +57,7 @@ var MapPage = React.createClass({
         { this.renderBeacons() }
         </Map>
         <Link to='new-beacon' className="btn btn-primary btn-fab add-beacon">
-          <i className="material-icons">add</i>
+          <i className="material-icons">+</i>
         </Link>
       </div>
     );

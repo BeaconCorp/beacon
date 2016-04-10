@@ -3,7 +3,7 @@ import auth from '../components/auth/helpers';
 
 export function createBeacon(options) {
   let token = auth.getToken();
-  return axios.post(`http://beacon.mycodespace.net/api/beacons?token=${token}`, {
+  return axios.post(`http://raisethebeacon.com/api/beacons?token=${token}`, {
     title: options.title,
     description: options.description,
     radius: options.radius,
@@ -17,7 +17,7 @@ export function createBeacon(options) {
 
 export function getAllBeacons(lat, lng) {
   let token = auth.getToken();
-  return axios.get(`http://beacon.mycodespace.net/api/beacons`, {
+  return axios.get(`http://raisethebeacon.com/api/beacons`, {
     params: {
       lat: lat,
       lng: lng,
