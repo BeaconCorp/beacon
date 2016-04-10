@@ -38,10 +38,10 @@ def do_post(token, model, payload):
     data = json.dumps(payload)
     url = build_url(model, token)
     resp = requests.post(build_url(model, token), data)
-    #print(data)
-    #print(url)
-    #print(resp.status_code)
-    #print(resp.text)
+    print(data)
+    print(url)
+    print(resp.status_code)
+    print(resp.text)
     return json.loads(resp.text)
 
 
@@ -82,9 +82,10 @@ def register_user(first, last, email, gender, bio, birthdate_datetime, zipcode, 
 
     return user
 
-def create_beacon(token, topics, description, lat, lng, radius, expires):
+def create_beacon(token, title, topics, description, lat, lng, radius, expires):
 
     payload = dict(
+        title=title,
         topics=topics,
         description=description,
         lat=lat,
@@ -140,6 +141,8 @@ if __name__ == '__main__':
         password=password,
     )
 
+    #email = 'system'
+
     print('Logging in ...')
     sys_user = do_login(email, password)
     token = sys_user['token']
@@ -148,6 +151,7 @@ if __name__ == '__main__':
     print("\nCreating Beacon:\n")
 
     create_beacon(
+        title='Mr. Sanders',
         token=token,
         topics='#FeelTheBern #BernieSanders',
         description="Mah test beacon.",
