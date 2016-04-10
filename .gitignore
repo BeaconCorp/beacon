@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Javascript
+node_modules
+bundle.js
+
+*.sqlite

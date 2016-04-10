@@ -1,0 +1,34 @@
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.navbar {
+  margin: 0 !important;
+}
+
+.map {
+  width: 100%;
+  height: calc(100% - 60px);
+}
+
+.add-beacon {
+  position: fixed !important;
+  right: 10px;
+  bottom: 20px;
+}
+
+.new-beacon {
+  margin: 0 10px;
+}
+
+.btn:focus:not(.btn-raised):not(.btn-link),
+ .btn:hover:not(.btn-raised):not(.btn-link),
+ .input-group-btn .btn:focus:not(.btn-raised):not(.btn-link),
+ .input-group-btn .btn:hover:not(.btn-raised):not(.btn-link) {
+   background-color: #009688;
+ }
