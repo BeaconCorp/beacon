@@ -1,0 +1,21 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "com.beaconcorp.beacon"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.beaconcorp.beacon"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.beaconcorp.beacon"
+        }
+    },
+    "dependent_plugins": {}
+}
