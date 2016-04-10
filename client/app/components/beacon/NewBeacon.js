@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import Router from 'react-router';
 import { Input, ButtonInput, Row, Col } from 'react-bootstrap';
 import { Notification } from 'react-notification';
 import { Form } from 'formsy-react';
@@ -38,6 +39,7 @@ const NewBeacon = React.createClass({
     .then((response) => {
       console.log('success', response);
       this.toggleNotification('Your beacon has been lit!');
+      Router.browserHistory.push('/');
     })
     .catch((response) => {
       console.log('error', response);
