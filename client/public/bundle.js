@@ -24778,7 +24778,7 @@
 
 	var _NewBeacon2 = _interopRequireDefault(_NewBeacon);
 
-	var _Login = __webpack_require__(676);
+	var _Login = __webpack_require__(671);
 
 	var _Login2 = _interopRequireDefault(_Login);
 
@@ -42607,15 +42607,13 @@
 
 	var _helpers = __webpack_require__(649);
 
-	var _helpers2 = _interopRequireDefault(_helpers);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var MapPage = _react2.default.createClass({
 	  displayName: 'MapPage',
 
 	  getInitialState: function getInitialState() {
-	    console.log('initialstate');
+	    console.log('MapPage.getInitialState()');
 	    return {
 	      beacons: []
 	    };
@@ -42624,16 +42622,34 @@
 	  componentDidMount: function componentDidMount() {
 	    var _this = this;
 
-	    console.log('component');
+	    console.log('MapPage.componentDidMount()');
 	    navigator.geolocation.getCurrentPosition(function (data) {
-	      (0, _helpers2.default)(data.coords.latitude, data.coords.longitude).then(function (response) {
+	      (0, _helpers.getAllBeacons)(data.coords.latitude, data.coords.longitude).then(function (response) {
+	        console.log('MapPage.componentDidMount(), got location successfully.');
 	        _this.setState({ beacons: response });
 	        renderBeacons();
 	      });
 	    });
+
+	    /*navigator.geolocation.getCurrentPosition(function(data) {
+	      
+	      var thing = getAllBeacons(data.coords.latitude, data.coords.longitude);
+	      
+	      console.log('MapPage.componentDidMount(), thing:');
+	      console.log(thing);
+	      
+	      thing.then((response) => {
+	        console.log('MapPage.componentDidMount(), got location successfully.');
+	        this.setState({ beacons: response });
+	        renderBeacons();
+	      });
+	       return null;
+	    
+	    });*/
 	  },
 
 	  renderBeacons: function renderBeacons() {
+	    console.log('MapPage.renderBeacons()');
 	    var beacons = this.state.beacons.map(function (beacon, index) {
 	      var position = [beacon.lat, beacon.lng];
 	      return _react2.default.createElement(
@@ -42654,14 +42670,14 @@
 	  },
 
 	  render: function render() {
-	    var position = [43.16, -77.5];
+	    var position = [43.044591, -76.150566]; // tech garden
 	    var mapStyle = { height: '100%' };
 	    return _react2.default.createElement(
 	      'div',
 	      { className: 'map' },
 	      _react2.default.createElement(
 	        _reactLeaflet.Map,
-	        { center: position, zoom: 13, style: mapStyle },
+	        { center: position, zoom: 12, style: mapStyle },
 	        _react2.default.createElement(_reactLeaflet.TileLayer, {
 	          url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
 	          attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -59519,8 +59535,8 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = getAllBeacons;
-	exports.default = createBeacon;
+	exports.createBeacon = createBeacon;
+	exports.getAllBeacons = getAllBeacons;
 
 	var _axios = __webpack_require__(650);
 
@@ -59530,17 +59546,10 @@
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-	function getAllBeacons(lat, lng) {
-
-	  return _axios2.default.get('http://beacon.mycodespace.net/api/beacons', {
-	    lat: lat,
-	    lng: lng,
-	    radius: 4
-	  });
-	};
-
 	function createBeacon(options) {
-	  console.log(options);
+
+	  console.log('helers, createBeacon(), options: ', options);
+
 	  return _axios2.default.post('http://beacon.mycodespace.net/api/beacons', _defineProperty({
 	    title: options.title,
 	    description: options.description,
@@ -59550,7 +59559,18 @@
 	    lat: options.lat,
 	    lng: options.lng
 	  }, 'radius', 4));
-	}
+	};
+
+	function getAllBeacons(lat, lng) {
+
+	  console.log('helpers, getAllBeacons()');
+
+	  return _axios2.default.get('http://beacon.mycodespace.net/api/beacons', {
+	    lat: lat,
+	    lng: lng,
+	    radius: 4
+	  });
+	};
 
 /***/ },
 /* 650 */
@@ -60747,7 +60767,7 @@
 
 	var _reactBootstrap = __webpack_require__(218);
 
-	var _reactNotification = __webpack_require__(671);
+	var _reactNotification = __webpack_require__(674);
 
 	var _formsyReact = __webpack_require__(679);
 
@@ -60779,14 +60799,15 @@
 	    var _this2 = this;
 
 	    e.preventDefault();
-	    console.log('submit beacon');
-	    (0, _helpers2.default)({
+	    console.log('NewBeacon.submitBeacon()');
+	    var options = {
 	      title: this.state.title,
-	      description: this.state.description,
+	      description: 'WHAT!?', //this.state.description,
 	      topics: this.state.topics,
 	      lat: this.state.lat,
 	      lng: this.state.lng
-	    }).then(function (response) {
+	    };
+	    (0, _helpers2.default)(options).then(function (response) {
 	      console.log('success', response);
 	      _this2.toggleNotification("Your beacon has been lit!");
 	    }).catch(function (response) {
@@ -60884,419 +60905,6 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.NotificationStack = exports.Notification = undefined;
-
-	var _notification = __webpack_require__(672);
-
-	var _notification2 = _interopRequireDefault(_notification);
-
-	var _notificationStack = __webpack_require__(674);
-
-	var _notificationStack2 = _interopRequireDefault(_notificationStack);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	exports.Notification = _notification2.default;
-	exports.NotificationStack = _notificationStack2.default;
-
-/***/ },
-/* 672 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _defaultPropTypes = __webpack_require__(673);
-
-	var _defaultPropTypes2 = _interopRequireDefault(_defaultPropTypes);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Notification = function (_Component) {
-	  _inherits(Notification, _Component);
-
-	  function Notification(props) {
-	    _classCallCheck(this, Notification);
-
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Notification).call(this, props));
-
-	    _this.getBarStyle = _this.getBarStyle.bind(_this);
-	    _this.getActionStyle = _this.getActionStyle.bind(_this);
-	    _this.getTitleStyle = _this.getTitleStyle.bind(_this);
-	    _this.handleClick = _this.handleClick.bind(_this);
-	    return _this;
-	  }
-
-	  _createClass(Notification, [{
-	    key: 'componentWillReceiveProps',
-	    value: function componentWillReceiveProps(nextProps) {
-	      if (nextProps.onDismiss && this.props.onDismiss === nextProps.onDismiss && nextProps.isActive && !this.props.isActive) {
-	        clearTimeout(this.dismissTimeout);
-	        this.dismissTimeout = setTimeout(nextProps.onDismiss, nextProps.dismissAfter);
-	      }
-	    }
-	  }, {
-	    key: 'componentWillUnmount',
-	    value: function componentWillUnmount() {
-	      clearTimeout(this.dismissTimeout);
-	    }
-
-	    /*
-	     * @description Dynamically get the styles for the bar.
-	     * @returns {object} result The style.
-	     */
-
-	  }, {
-	    key: 'getBarStyle',
-	    value: function getBarStyle() {
-	      if (this.props.style === false) return {};
-
-	      var _props = this.props;
-	      var isActive = _props.isActive;
-	      var barStyle = _props.barStyle;
-	      var activeBarStyle = _props.activeBarStyle;
-
-
-	      var baseStyle = {
-	        position: 'fixed',
-	        bottom: '2rem',
-	        left: '-100%',
-	        width: 'auto',
-	        padding: '1rem',
-	        margin: 0,
-	        color: '#fafafa',
-	        font: '1rem normal Roboto, sans-serif',
-	        borderRadius: '5px',
-	        background: '#212121',
-	        borderSizing: 'border-box',
-	        boxShadow: '0 0 1px 1px rgba(10, 10, 11, .125)',
-	        cursor: 'default',
-	        WebKittransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
-	        MozTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
-	        msTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
-	        OTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
-	        transition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
-	        WebkitTransform: 'translatez(0)',
-	        MozTransform: 'translatez(0)',
-	        msTransform: 'translatez(0)',
-	        OTransform: 'translatez(0)',
-	        transform: 'translatez(0)'
-	      };
-
-	      return isActive ? Object.assign({}, baseStyle, {
-	        left: '1rem'
-	      }, barStyle, activeBarStyle) : Object.assign({}, baseStyle, barStyle);
-	    }
-
-	    /*
-	     * @function getActionStyle
-	     * @description Dynamically get the styles for the action text.
-	     * @returns {object} result The style.
-	     */
-
-	  }, {
-	    key: 'getActionStyle',
-	    value: function getActionStyle() {
-	      return this.props.style !== false ? Object.assign({}, {
-	        padding: '0.125rem',
-	        marginLeft: '1rem',
-	        color: '#f44336',
-	        font: '.75rem normal Roboto, sans-serif',
-	        lineHeight: '1rem',
-	        letterSpacing: '.125ex',
-	        textTransform: 'uppercase',
-	        borderRadius: '5px',
-	        cursor: 'pointer'
-	      }, this.props.actionStyle) : {};
-	    }
-
-	    /*
-	     * @function getTitleStyle
-	     * @description Dynamically get the styles for the title.
-	     * @returns {object} result The style.
-	     */
-
-	  }, {
-	    key: 'getTitleStyle',
-	    value: function getTitleStyle() {
-	      return this.props.style !== false ? Object.assign({}, {
-	        fontWeight: '700',
-	        marginRight: '.5rem'
-	      }, this.props.titleStyle) : {};
-	    }
-
-	    /*
-	     * @function handleClick
-	     * @description Handle click events on the action button.
-	     */
-
-	  }, {
-	    key: 'handleClick',
-	    value: function handleClick() {
-	      if (this.props.onClick && typeof this.props.onClick === 'function') {
-	        return this.props.onClick();
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var className = 'notification-bar';
-
-	      if (this.props.isActive) className += ' ' + this.props.activeClassName;
-	      if (this.props.className) className += ' ' + this.props.className;
-
-	      return _react2.default.createElement(
-	        'div',
-	        { className: className, style: this.getBarStyle() },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'notification-bar-wrapper' },
-	          this.props.title ? _react2.default.createElement(
-	            'span',
-	            {
-	              ref: 'title',
-	              className: 'notification-bar-title',
-	              style: this.getTitleStyle()
-	            },
-	            this.props.title
-	          ) : null,
-	          _react2.default.createElement(
-	            'span',
-	            {
-	              ref: 'message',
-	              className: 'notification-bar-message'
-	            },
-	            this.props.message
-	          ),
-	          this.props.action ? _react2.default.createElement(
-	            'span',
-	            {
-	              ref: 'action',
-	              className: 'notification-bar-action',
-	              onClick: this.handleClick,
-	              style: this.getActionStyle()
-	            },
-	            this.props.action
-	          ) : null
-	        )
-	      );
-	    }
-	  }]);
-
-	  return Notification;
-	}(_react.Component);
-
-	Notification.propTypes = _defaultPropTypes2.default;
-
-	Notification.defaultProps = {
-	  isActive: false,
-	  dismissAfter: 2000,
-	  activeClassName: 'notification-bar-active'
-	};
-
-	exports.default = Notification;
-
-/***/ },
-/* 673 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _react = __webpack_require__(1);
-
-	exports.default = {
-	  message: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element]).isRequired,
-	  action: _react.PropTypes.oneOfType([_react.PropTypes.bool, _react.PropTypes.string]),
-	  onClick: _react.PropTypes.func,
-	  style: _react.PropTypes.bool,
-	  actionStyle: _react.PropTypes.object,
-	  barStyle: _react.PropTypes.object,
-	  activeBarStyle: _react.PropTypes.object,
-	  dismissAfter: _react.PropTypes.number,
-	  onDismiss: _react.PropTypes.func,
-	  className: _react.PropTypes.string,
-	  activeClassName: _react.PropTypes.string.isRequired,
-	  isActive: _react.PropTypes.bool,
-	  title: _react.PropTypes.string
-	};
-
-/***/ },
-/* 674 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _defaultPropTypes = __webpack_require__(673);
-
-	var _defaultPropTypes2 = _interopRequireDefault(_defaultPropTypes);
-
-	var _stackedNotification = __webpack_require__(675);
-
-	var _stackedNotification2 = _interopRequireDefault(_stackedNotification);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	/**
-	 * The notification list does not have any state, so use a
-	 * pure function here. It just needs to return the stacked array
-	 * of notification components.
-	 */
-	var NotificationStack = function NotificationStack(props) {
-	  return _react2.default.createElement(
-	    'div',
-	    { className: 'notification-list' },
-	    props.notifications.map(function (notification, index) {
-	      var dismissAfter = notification.dismissAfter || props.dismissAfter;
-	      var isLast = index === 0 && props.notifications.length === 1;
-
-	      return _react2.default.createElement(_stackedNotification2.default, _extends({}, notification, {
-	        key: notification.key,
-	        isLast: isLast,
-	        action: notification.action || props.action,
-	        dismissAfter: isLast ? dismissAfter : dismissAfter + index * 1000,
-	        onClick: function onClick() {
-	          return props.onDismiss(notification);
-	        },
-	        onDismiss: function onDismiss() {
-	          setTimeout(function () {
-	            setTimeout(props.onDismiss.bind(undefined, notification), 300);
-	          }, 300);
-	        },
-	        index: index
-	      }));
-	    })
-	  );
-	};
-
-	NotificationStack.propTypes = {
-	  notifications: _react.PropTypes.array.isRequired,
-	  onDismiss: _react.PropTypes.func
-	};
-
-	NotificationStack.defaultProps = {
-	  dismissAfter: 1000
-	};
-
-	exports.default = NotificationStack;
-
-/***/ },
-/* 675 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _notification = __webpack_require__(672);
-
-	var _notification2 = _interopRequireDefault(_notification);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var StackedNotification = function (_Component) {
-	  _inherits(StackedNotification, _Component);
-
-	  function StackedNotification(props) {
-	    _classCallCheck(this, StackedNotification);
-
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StackedNotification).call(this, props));
-
-	    _this.state = {
-	      isActive: false
-	    };
-	    return _this;
-	  }
-
-	  _createClass(StackedNotification, [{
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      setTimeout(this.setState.bind(this, {
-	        isActive: true
-	      }), 1);
-
-	      setTimeout(this.setState.bind(this, {
-	        isActive: false
-	      }), this.props.dismissAfter);
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var bottomPosition = 2 + this.props.index * 4 + 'rem';
-
-	      return _react2.default.createElement(_notification2.default, _extends({}, this.props, {
-	        action: false,
-	        isActive: this.state.isActive,
-	        barStyle: Object.assign({}, {
-	          bottom: bottomPosition
-	        }, this.props.barStyle),
-	        activeBarStyle: Object.assign({}, {
-	          bottom: bottomPosition
-	        }, this.props.activeBarStyle)
-	      }));
-	    }
-	  }]);
-
-	  return StackedNotification;
-	}(_react.Component);
-
-	;
-
-	exports.default = StackedNotification;
-
-/***/ },
-/* 676 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
 
 	var _react = __webpack_require__(1);
 
@@ -61304,7 +60912,7 @@
 
 	var _reactBootstrap = __webpack_require__(218);
 
-	var _helpers = __webpack_require__(677);
+	var _helpers = __webpack_require__(672);
 
 	var _helpers2 = _interopRequireDefault(_helpers);
 
@@ -61334,6 +60942,8 @@
 
 	    _helpers2.default.login(email, pass, function (loggedIn) {
 	      if (!loggedIn) return _this.setState({ error: true });
+
+	      console.log('Login.handleSubmit(), auth.login() - login successful.');
 
 	      var location = _this.props.location;
 
@@ -61376,7 +60986,7 @@
 	exports.default = Login;
 
 /***/ },
-/* 677 */
+/* 672 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -61385,7 +60995,7 @@
 
 	var _axios2 = _interopRequireDefault(_axios);
 
-	var _jsSha = __webpack_require__(678);
+	var _jsSha = __webpack_require__(673);
 
 	var _jsSha2 = _interopRequireDefault(_jsSha);
 
@@ -61421,7 +61031,7 @@
 	};
 
 /***/ },
-/* 678 */
+/* 673 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*
@@ -61655,6 +61265,419 @@
 	}(this));
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 674 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.NotificationStack = exports.Notification = undefined;
+
+	var _notification = __webpack_require__(675);
+
+	var _notification2 = _interopRequireDefault(_notification);
+
+	var _notificationStack = __webpack_require__(677);
+
+	var _notificationStack2 = _interopRequireDefault(_notificationStack);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.Notification = _notification2.default;
+	exports.NotificationStack = _notificationStack2.default;
+
+/***/ },
+/* 675 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _defaultPropTypes = __webpack_require__(676);
+
+	var _defaultPropTypes2 = _interopRequireDefault(_defaultPropTypes);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Notification = function (_Component) {
+	  _inherits(Notification, _Component);
+
+	  function Notification(props) {
+	    _classCallCheck(this, Notification);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Notification).call(this, props));
+
+	    _this.getBarStyle = _this.getBarStyle.bind(_this);
+	    _this.getActionStyle = _this.getActionStyle.bind(_this);
+	    _this.getTitleStyle = _this.getTitleStyle.bind(_this);
+	    _this.handleClick = _this.handleClick.bind(_this);
+	    return _this;
+	  }
+
+	  _createClass(Notification, [{
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(nextProps) {
+	      if (nextProps.onDismiss && this.props.onDismiss === nextProps.onDismiss && nextProps.isActive && !this.props.isActive) {
+	        clearTimeout(this.dismissTimeout);
+	        this.dismissTimeout = setTimeout(nextProps.onDismiss, nextProps.dismissAfter);
+	      }
+	    }
+	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      clearTimeout(this.dismissTimeout);
+	    }
+
+	    /*
+	     * @description Dynamically get the styles for the bar.
+	     * @returns {object} result The style.
+	     */
+
+	  }, {
+	    key: 'getBarStyle',
+	    value: function getBarStyle() {
+	      if (this.props.style === false) return {};
+
+	      var _props = this.props;
+	      var isActive = _props.isActive;
+	      var barStyle = _props.barStyle;
+	      var activeBarStyle = _props.activeBarStyle;
+
+
+	      var baseStyle = {
+	        position: 'fixed',
+	        bottom: '2rem',
+	        left: '-100%',
+	        width: 'auto',
+	        padding: '1rem',
+	        margin: 0,
+	        color: '#fafafa',
+	        font: '1rem normal Roboto, sans-serif',
+	        borderRadius: '5px',
+	        background: '#212121',
+	        borderSizing: 'border-box',
+	        boxShadow: '0 0 1px 1px rgba(10, 10, 11, .125)',
+	        cursor: 'default',
+	        WebKittransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
+	        MozTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
+	        msTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
+	        OTransition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
+	        transition: '.5s cubic-bezier(0.89, 0.01, 0.5, 1.1)',
+	        WebkitTransform: 'translatez(0)',
+	        MozTransform: 'translatez(0)',
+	        msTransform: 'translatez(0)',
+	        OTransform: 'translatez(0)',
+	        transform: 'translatez(0)'
+	      };
+
+	      return isActive ? Object.assign({}, baseStyle, {
+	        left: '1rem'
+	      }, barStyle, activeBarStyle) : Object.assign({}, baseStyle, barStyle);
+	    }
+
+	    /*
+	     * @function getActionStyle
+	     * @description Dynamically get the styles for the action text.
+	     * @returns {object} result The style.
+	     */
+
+	  }, {
+	    key: 'getActionStyle',
+	    value: function getActionStyle() {
+	      return this.props.style !== false ? Object.assign({}, {
+	        padding: '0.125rem',
+	        marginLeft: '1rem',
+	        color: '#f44336',
+	        font: '.75rem normal Roboto, sans-serif',
+	        lineHeight: '1rem',
+	        letterSpacing: '.125ex',
+	        textTransform: 'uppercase',
+	        borderRadius: '5px',
+	        cursor: 'pointer'
+	      }, this.props.actionStyle) : {};
+	    }
+
+	    /*
+	     * @function getTitleStyle
+	     * @description Dynamically get the styles for the title.
+	     * @returns {object} result The style.
+	     */
+
+	  }, {
+	    key: 'getTitleStyle',
+	    value: function getTitleStyle() {
+	      return this.props.style !== false ? Object.assign({}, {
+	        fontWeight: '700',
+	        marginRight: '.5rem'
+	      }, this.props.titleStyle) : {};
+	    }
+
+	    /*
+	     * @function handleClick
+	     * @description Handle click events on the action button.
+	     */
+
+	  }, {
+	    key: 'handleClick',
+	    value: function handleClick() {
+	      if (this.props.onClick && typeof this.props.onClick === 'function') {
+	        return this.props.onClick();
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var className = 'notification-bar';
+
+	      if (this.props.isActive) className += ' ' + this.props.activeClassName;
+	      if (this.props.className) className += ' ' + this.props.className;
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: className, style: this.getBarStyle() },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'notification-bar-wrapper' },
+	          this.props.title ? _react2.default.createElement(
+	            'span',
+	            {
+	              ref: 'title',
+	              className: 'notification-bar-title',
+	              style: this.getTitleStyle()
+	            },
+	            this.props.title
+	          ) : null,
+	          _react2.default.createElement(
+	            'span',
+	            {
+	              ref: 'message',
+	              className: 'notification-bar-message'
+	            },
+	            this.props.message
+	          ),
+	          this.props.action ? _react2.default.createElement(
+	            'span',
+	            {
+	              ref: 'action',
+	              className: 'notification-bar-action',
+	              onClick: this.handleClick,
+	              style: this.getActionStyle()
+	            },
+	            this.props.action
+	          ) : null
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Notification;
+	}(_react.Component);
+
+	Notification.propTypes = _defaultPropTypes2.default;
+
+	Notification.defaultProps = {
+	  isActive: false,
+	  dismissAfter: 2000,
+	  activeClassName: 'notification-bar-active'
+	};
+
+	exports.default = Notification;
+
+/***/ },
+/* 676 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	exports.default = {
+	  message: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element]).isRequired,
+	  action: _react.PropTypes.oneOfType([_react.PropTypes.bool, _react.PropTypes.string]),
+	  onClick: _react.PropTypes.func,
+	  style: _react.PropTypes.bool,
+	  actionStyle: _react.PropTypes.object,
+	  barStyle: _react.PropTypes.object,
+	  activeBarStyle: _react.PropTypes.object,
+	  dismissAfter: _react.PropTypes.number,
+	  onDismiss: _react.PropTypes.func,
+	  className: _react.PropTypes.string,
+	  activeClassName: _react.PropTypes.string.isRequired,
+	  isActive: _react.PropTypes.bool,
+	  title: _react.PropTypes.string
+	};
+
+/***/ },
+/* 677 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _defaultPropTypes = __webpack_require__(676);
+
+	var _defaultPropTypes2 = _interopRequireDefault(_defaultPropTypes);
+
+	var _stackedNotification = __webpack_require__(678);
+
+	var _stackedNotification2 = _interopRequireDefault(_stackedNotification);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * The notification list does not have any state, so use a
+	 * pure function here. It just needs to return the stacked array
+	 * of notification components.
+	 */
+	var NotificationStack = function NotificationStack(props) {
+	  return _react2.default.createElement(
+	    'div',
+	    { className: 'notification-list' },
+	    props.notifications.map(function (notification, index) {
+	      var dismissAfter = notification.dismissAfter || props.dismissAfter;
+	      var isLast = index === 0 && props.notifications.length === 1;
+
+	      return _react2.default.createElement(_stackedNotification2.default, _extends({}, notification, {
+	        key: notification.key,
+	        isLast: isLast,
+	        action: notification.action || props.action,
+	        dismissAfter: isLast ? dismissAfter : dismissAfter + index * 1000,
+	        onClick: function onClick() {
+	          return props.onDismiss(notification);
+	        },
+	        onDismiss: function onDismiss() {
+	          setTimeout(function () {
+	            setTimeout(props.onDismiss.bind(undefined, notification), 300);
+	          }, 300);
+	        },
+	        index: index
+	      }));
+	    })
+	  );
+	};
+
+	NotificationStack.propTypes = {
+	  notifications: _react.PropTypes.array.isRequired,
+	  onDismiss: _react.PropTypes.func
+	};
+
+	NotificationStack.defaultProps = {
+	  dismissAfter: 1000
+	};
+
+	exports.default = NotificationStack;
+
+/***/ },
+/* 678 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _notification = __webpack_require__(675);
+
+	var _notification2 = _interopRequireDefault(_notification);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var StackedNotification = function (_Component) {
+	  _inherits(StackedNotification, _Component);
+
+	  function StackedNotification(props) {
+	    _classCallCheck(this, StackedNotification);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StackedNotification).call(this, props));
+
+	    _this.state = {
+	      isActive: false
+	    };
+	    return _this;
+	  }
+
+	  _createClass(StackedNotification, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      setTimeout(this.setState.bind(this, {
+	        isActive: true
+	      }), 1);
+
+	      setTimeout(this.setState.bind(this, {
+	        isActive: false
+	      }), this.props.dismissAfter);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var bottomPosition = 2 + this.props.index * 4 + 'rem';
+
+	      return _react2.default.createElement(_notification2.default, _extends({}, this.props, {
+	        action: false,
+	        isActive: this.state.isActive,
+	        barStyle: Object.assign({}, {
+	          bottom: bottomPosition
+	        }, this.props.barStyle),
+	        activeBarStyle: Object.assign({}, {
+	          bottom: bottomPosition
+	        }, this.props.activeBarStyle)
+	      }));
+	    }
+	  }]);
+
+	  return StackedNotification;
+	}(_react.Component);
+
+	;
+
+	exports.default = StackedNotification;
 
 /***/ },
 /* 679 */

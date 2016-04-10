@@ -26,6 +26,8 @@ const Login = React.createClass({
       if (!loggedIn)
         return this.setState({ error: true });
 
+      console.log('Login.handleSubmit(), auth.login() - login successful.');
+
       const { location } = this.props;
 
       if (location.state && location.state.nextPathname) {

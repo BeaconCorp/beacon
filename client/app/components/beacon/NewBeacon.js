@@ -21,14 +21,17 @@ const NewBeacon = React.createClass({
 
   submitBeacon: function (e) {
     e.preventDefault();
-    console.log('submit beacon');
-    createBeacon({
+    console.log('NewBeacon.submitBeacon()');
+    var options = {
       title: this.state.title,
-      description: this.state.description,
+      description: 'WHAT!?', //this.state.description,
       topics: this.state.topics,
       lat: this.state.lat,
       lng: this.state.lng,
-    })
+    };
+    createBeacon(
+      options
+    )
     .then((response) => {
       console.log('success', response);
       this.toggleNotification("Your beacon has been lit!");
@@ -96,7 +99,7 @@ const NewBeacon = React.createClass({
           action="Dismiss"
           onDismiss={this.toggleNotification}
           onClick={() =>  this.setState({ isActive: false })}
-        />
+        /> 
       </div>
     );
   },
