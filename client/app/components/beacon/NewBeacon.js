@@ -63,22 +63,11 @@ const NewBeacon = React.createClass({
     console.log('NewBeacon.toggleNotification()');
     this.setState({
       isActive: !this.state.isActive,
-      notification_message: message,
+      notificationMessage: message,
     });
   },
 
   render: function () {
-
-    console.log('NewBeacon.render()');
-
-    //const { isActive } = this.state;
-
-    /*this.setState({
-      isActive: false,
-    });*/
-
-    console.log(this.state);
-
     return (
       <div>
         <form className="new-beacon" onSubmit={this.submitBeacon}>
@@ -100,7 +89,7 @@ const NewBeacon = React.createClass({
         </form>
         <Notification
           isActive={this.state == null ? false : this.state.isActive}
-          message={this.state == null ? '' : this.state.notification_message}
+          message={this.state == null ? '' : this.state.notificationMessage}
           action="Dismiss"
           onDismiss={this.toggleNotification}
           onClick={() =>  this.setState({ isActive: false })}

@@ -61136,22 +61136,12 @@
 	    console.log('NewBeacon.toggleNotification()');
 	    this.setState({
 	      isActive: !this.state.isActive,
-	      notification_message: message
+	      notificationMessage: message
 	    });
 	  },
 
 	  render: function render() {
 	    var _this3 = this;
-
-	    console.log('NewBeacon.render()');
-
-	    //const { isActive } = this.state;
-
-	    /*this.setState({
-	      isActive: false,
-	    });*/
-
-	    console.log(this.state);
 
 	    return _react2.default.createElement(
 	      'div',
@@ -61187,7 +61177,7 @@
 	      ),
 	      _react2.default.createElement(_reactNotification.Notification, {
 	        isActive: this.state == null ? false : this.state.isActive,
-	        message: this.state == null ? '' : this.state.notification_message,
+	        message: this.state == null ? '' : this.state.notificationMessage,
 	        action: 'Dismiss',
 	        onDismiss: this.toggleNotification,
 	        onClick: function onClick() {
